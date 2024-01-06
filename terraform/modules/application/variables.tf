@@ -17,7 +17,3 @@ variable "public_subnets" {
 variable "private_subnets" {
   type = list(string)
 }
-
-variable "vpc_endpoint_id" {
-  type = string
-}

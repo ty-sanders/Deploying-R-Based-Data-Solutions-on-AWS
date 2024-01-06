@@ -12,6 +12,22 @@ module "vpc" {
   enable_vpn_gateway = true
 }
 
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
+output "aws_account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
+
+output "aws_iam_principal" {
+  value = data.aws_caller_identity.current.arn
+}
+
+output "aws_region" {
+  value = data.aws_region.current.name
+}
+
 resource "aws_ecr_repository" "r_shiny_app_runner_repo" {
   name                 = "r-shiny-app-runner"
   image_tag_mutability = "MUTABLE"
@@ -38,7 +54,7 @@ output "private_subnets" {
   value = module.vpc.private_subnets
 }
 
-output "verification_build_role_arn" {
+output "r_shiny_build_role_arn" {
   value = aws_iam_role.app_runner_r_shiny_build_role.arn
 }
 
@@ -47,7 +63,7 @@ module "vpc_endpoints" {
   source = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
 
   vpc_id             = module.vpc.vpc_id
-  security_group_ids = [module.vpc_endpoints_security_group.security_group_id]
+  security_group_ids = [aws_security_group.endpoint_sg.id]
 
   endpoints = {
     apprunner = {
@@ -59,8 +75,8 @@ module "vpc_endpoints" {
 }
 
 resource "aws_security_group" "app_sg" {
-  name_prefix = "application_sg"
-  vpc_id = var.vpc_id
+  name = "application_sg"
+  vpc_id = module.vpc.vpc_id
   ingress {
     from_port   = 0
     to_port     = 0
@@ -83,17 +99,16 @@ resource "aws_apprunner_vpc_connector" "connector" {
 }
 
 resource "aws_security_group" "endpoint_sg" {
-  name_prefix = "endpoint_sg"
   vpc_id = module.vpc.vpc_id
 
-  name        = "r-shiny-vpc-endpoint"
+  name        = "r_shiny_vpc_endpoint"
   description = "Security group for Verification VPC Endpoint"
 
   ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    security_groups = ["aws_security_group.main_sg1.name"]
+    security_groups = [aws_security_group.app_sg.id]
   }
 
   egress {
