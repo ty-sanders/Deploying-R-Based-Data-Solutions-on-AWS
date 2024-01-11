@@ -1,8 +1,8 @@
-resource "aws_apprunner_service" "apprunner_verification_app" {
+resource "aws_apprunner_service" "apprunner_r_shiny_app" {
   service_name = "apprunner-r-shiny-app"
 
   observability_configuration {
-    observability_configuration_arn = aws_apprunner_observability_configuration.verification_app_xray_config.arn
+    observability_configuration_arn = aws_apprunner_observability_configuration.r_shiny_app_xray_config.arn
     observability_enabled           = true
   }
   source_configuration {
@@ -15,7 +15,7 @@ resource "aws_apprunner_service" "apprunner_verification_app" {
     }
     auto_deployments_enabled = true
     authentication_configuration {
-      access_role_arn = "arn:aws:iam::068608558151:role/r-shiny-build-role"
+      access_role_arn = "arn:aws:iam::088130860316:role/apprunner-r-shiny-build-role"
     }
   }
   health_check_configuration {
@@ -28,12 +28,12 @@ resource "aws_apprunner_service" "apprunner_verification_app" {
   network_configuration {
 
     ingress_configuration {
-      is_publicly_accessible = false
+      is_publicly_accessible = true
     }
 
     egress_configuration {
       egress_type       = "VPC"
-      vpc_connector_arn = aws_apprunner_vpc_connector.connector.arn
+      vpc_connector_arn = var.connector_arn
     }
   }
   tags = {
@@ -44,6 +44,7 @@ resource "aws_apprunner_service" "apprunner_verification_app" {
   }
 }
 
+
 resource "aws_apprunner_observability_configuration" "r_shiny_app_xray_config" {
   observability_configuration_name = "r-shiny-app-xray-config"
 
@@ -52,13 +53,18 @@ resource "aws_apprunner_observability_configuration" "r_shiny_app_xray_config" {
   }
 }
 
-
-resource "aws_apprunner_vpc_ingress_connection" "r_shiny_vpc_ingress_connection" {
-  name        = "r-shiny-vpc-ingress-connection"
-  service_arn = aws_apprunner_service.apprunner_verification_app.arn
-
-  ingress_vpc_configuration {
-    vpc_id          = var.vpc_id
-    vpc_endpoint_id = var.vpc_endpoint_id
-  }
+output "app_url" {
+  value = aws_apprunner_service.apprunner_r_shiny_app.service_url
 }
+
+
+#resource "aws_apprunner_vpc_ingress_connection" "r_shiny_vpc_ingress_connection" {
+#  name        = "r-shiny-vpc-ingress-connection"
+#  service_arn = aws_apprunner_service.apprunner_r_shiny_app.arn
+#
+#  ingress_vpc_configuration {
+#    vpc_id          = var.vpc_id
+#    vpc_endpoint_id = var.vpc_endpoint_id
+#  }
+#}
+

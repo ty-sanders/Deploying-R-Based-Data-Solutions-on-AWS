@@ -17,3 +17,12 @@ variable "public_subnets" {
 variable "private_subnets" {
   type = list(string)
 }
+
+
+variable "connector_arn" {
+  type = string
+}
+
+variable "vpc_endpoint_id" {
+  type = string
+}

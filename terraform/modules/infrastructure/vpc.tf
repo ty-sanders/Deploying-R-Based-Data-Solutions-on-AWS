@@ -28,6 +28,11 @@ output "aws_region" {
   value = data.aws_region.current.name
 }
 
+output "connector_arn" {
+  value = aws_apprunner_vpc_connector.connector.arn
+}
+
+
 resource "aws_ecr_repository" "r_shiny_app_runner_repo" {
   name                 = "r-shiny-app-runner"
   image_tag_mutability = "MUTABLE"
@@ -37,7 +42,7 @@ resource "aws_ecr_repository" "r_shiny_app_runner_repo" {
   }
 }
 
-output "ecr_repo_url" {
+output "ecr_repository_url" {
   value = aws_ecr_repository.r_shiny_app_runner_repo.repository_url
 }
 
@@ -54,10 +59,13 @@ output "private_subnets" {
   value = module.vpc.private_subnets
 }
 
-output "r_shiny_build_role_arn" {
-  value = aws_iam_role.app_runner_r_shiny_build_role.arn
-}
+#output "r_shiny_build_role_arn" {
+#  value = aws_iam_role.app_runner_r_shiny_build_role.arn
+#}
 
+output "vpc_endpoint_id" {
+  value = module.vpc_endpoints.endpoints.apprunner.id
+}
 
 module "vpc_endpoints" {
   source = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
